@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Whatsapp Bot</title>
+  <script src="/lib/babel-standalone@6.26.0/babel.min.js"></script>
+  <script>var process = { env:{} };</script>
+  <script src="/lib/react@18.3.1/umd/react.production.min.js" rel="preload" crossorigin></script>
+  <script src="/lib/react-dom@18.3.1/umd/react-dom.production.min.js" rel="preload" crossorigin></script>
+  <script src="/lib/@mui/material@5.15.19/umd/material-ui.production.min.js" rel="preload"></script>
+  <script src="/lib/lms-react-js/0.0.2/production.min.js" rel="preload"></script>
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> -->
+  <link 
+    rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" 
+    integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" 
+  />
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/smoothness/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+  <script src="/lib/moment.js/2.29.1/moment.min.js"></script>
+  <script src="/lib/moment-timezone/0.5.33/moment-timezone-with-data.min.js"></script>
+<style>
+body {
+  margin: 0;padding: 0;
+  --box-shasow : rgb(145 158 171/24%) 0px 0px 2px 0px,rgb(145 158 171/24%) 0px 16px 32px -4px;
+  --box-shadow-con : 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  background-color: #efefef;
+  --primiry-color:#18222e;
+  --spacing:20px;
+  --google-color-blue : #4285f4;
+  --google-color-green : #34a853;
+  --google-color-yellow : #fbbc05;
+  --google-color-red : #ea4335;
+  --google-color-silver : silver;
+  --google-color-purple:#8528fe;
+  --animate-duration : 0.5s;
+  /* --animate-delay: 0.25s; */
+}
+*:not(i):not(pre) { font-family: monospace !important;font-size: 18px; }
+/* width */
+::-webkit-scrollbar { width: calc( var(--spacing) * 0.75 ); }
+/* Track */
+::-webkit-scrollbar-track { background: #f1f1f1; }
+/* Handle */
+::-webkit-scrollbar-thumb { background: #888; }
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+.hub { width: 100vw;height: 100vh;overflow: hidden;position: relative; }
+#container { 
+  height:100vh;width:100vw;display:flex;flex-direction:column;margin:0px auto;display: flex;
+  justify-content: flex-start;align-items: center;overflow: auto;position: absolute;top: 0;left: 0;
+}
+#container > div.main-container { 
+  width:600px;margin: 0 var(--spacing);box-sizing: border-box;background-color: rgba(255, 255, 255,0.85);
+  border-radius:calc(  var(--spacing)/2 );margin: var(--spacing) 0;box-shadow: var(--box-shadow-con);padding:var(--spacing);
+}
+
+/* CLIENTS */
+.clients-header { display: flex;flex-direction: row;justify-content: space-between;align-items: center; }
+.clients-header > p { margin: 0;flex:1; }
+.clients-header > div { display: flex;flex-direction: row; }
+
+
+.client { 
+  display: flex;flex-direction: column;background-color: white;box-shadow: var(--box-shasow);border-radius: calc(var(--spacing)/2);
+  margin-top: calc(var(--spacing)/2);cursor: pointer;
+}
+.client > div { box-sizing: border-box;padding:calc(var(--spacing)/2) var(--spacing); }
+.client > div:first-child { display: flex;flex-direction: row;justify-content:space-between;align-items: center;background-color: silver; }
+.client:hover > div:first-child { background-color: var(--google-color-blue);color: white; }
+.client > div:first-child > p { margin: 0;color: inherit; }
+.client > div:last-child { padding-bottom:var(--spacing); }
+.client > div:last-child > p { margin: 0;font-size: 12px; }
+.client > div:last-child > p > span { color: silver;width: 160px;font-size: 12px;display: inline-block; }
+.client-footer { display: flex;flex-direction: row;justify-content: space-between;align-content: center; }
+.client-footer > div:first-child { flex: 1; }
+</style>
+</head>
+<body>
+  <div class="hub">
+    <div id="container"></div>
+  </div>
+  <script type="text/babel">
+const __env = {
+  'serverDomain':'__server_domain__',
+  'userId':'__user_id__',
+  'xAuthToken':'__x_auth_token__'
+}
+const initialState = {
+  clients : [],
+  activeClientState:{},
+  refreshing:false,
+  removing:null,
+  collectingQrCode : false,
+  loading:false,
+  error:null,
+  qrCode : null,
+  totalUpdates:0
+}
+const fetcher = {
+  'createNewClient':(params={ 'clientId':Number() },callback=()=>{})=>{
+    fetch(`/api/clients/create?clientId=${params.clientId}`).then(res=>res.json()).then(res=>callback(res)).catch(error=>callback({ 'status':403,error }))
+  },
+  'removeClient':(params={ 'clientId':Number() },callback=()=>{})=>{
+    fetch(`/api/clients/remove?clientId=${params.clientId}`).then(res=>res.json()).then(res=>callback(res)).catch(error=>callback({ 'status':403,error }))
+  },
+  'collectMessagesLog':(params={ 'clientId':Number() },callback=()=>{})=>{
+    fetch(`/api/client/messages-log?clientId=${params.clientId}`).then(res=>res.json()).then(res=>callback(res)).catch(error=>callback({ 'status':403,error }))
+  },
+  'getClientsState':(params={},callback=()=>{})=>{
+    fetch('/api/clients/state').then(res=>res.json()).then(res=>callback(res)).catch(error=>callback({ 'status':403,error }))
+  }
+}
+class App extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      ...initialState
+    }
+  }
+  componentDidMount(){
+    this.getClientsState()
+  }
+  getClientsState(params={}){
+    if( this.state.refreshing === false ){
+      this.setState({ 'refreshing':true },()=>{
+        setTimeout(()=>{
+          fetcher.getClientsState({},log=>{
+            let _state = { 'refreshing':false }
+            if( log.status === 200 ){
+              _state.clients = log.data.clients;
+              _state.activeClientState = log.data.activeClientState || {}
+              if( typeof _state.activeClientState.activeClinetUniqeId === 'string' ){
+                _state.qrCode = null
+              }
+            }
+            this.setState(_state)
+          })
+        },1000)
+      })
+    }
+  }
+  createNewClient(params={}){
+    if( this.state.collectingQrCode === false ){
+      this.setState({ collectingQrCode:true,'qrCode':null },()=>{
+        fetcher.createNewClient({'clientId':params.clientId},log=>{
+          let _state = { 'totalUpdates':this.state.totalUpdates+1 }
+          if( log.status === 200 ){
+            console.log(log.data)
+            _state.qrCode = log.data.qrString
+          }
+          _state.collectingQrCode = false
+          this.setState(_state,()=>{
+            this.getClientsState()
+          })
+        })
+      })
+    }
+  }
+  collectMessagesLog(params={}){
+    let { clientId } = params;
+    fetcher.collectMessagesLog({ clientId },console.log)
+  }
+  removingClient({clientId}){
+    if( !Number.isInteger(this.state.removing) ){
+      this.setState({ removing:clientId },()=>{
+        fetcher.removeClient({'clientId':clientId},log=>{
+          let _state = {}
+          _state.removing = null
+          this.setState(_state,()=>{
+            this.getClientsState()
+          })
+        })
+      })
+    }
+  }
+  render(){
+    let { loading , qrCode , collectingQrCode , clients , activeClientState , refreshing , removing } = this.state;
+    return (
+      <div class="main-container">
+        <div className='clients-header'>
+          <p>CLients</p>
+          <div>
+            <LMSReact.InlineSquareButton 
+              loading={refreshing} disabled={refreshing} size='m' location='right-top' icon={`fa-solid fa-arrows-rotate ${refreshing?'fa-spin':''}`}
+              style={{backgroundColor:`var(--google-color-blue)`,marginRight:'calc(var(--spacing)/2)'}} title='Refresh ?' onClick={e=>this.getClientsState()}
+            ></LMSReact.InlineSquareButton>
+            <LMSReact.InlineSquareButton 
+              loading={collectingQrCode} disabled={collectingQrCode} size='m' location='right-top' icon='fas fa-plus' 
+              style={{backgroundColor:`var(--google-color-green)`}} title='Add Client' onClick={e=>this.createNewClient()}
+            ></LMSReact.InlineSquareButton></div>
+        </div>
+        <hr/>
+        {qrCode
+        ?<pre style={{fontSize:14}}>{qrCode}</pre>
+        :<React.Fragment></React.Fragment>
+        }
+        {clients.map((client,i)=>{
+          let { clientId , clientUniqeId , lastActiveDateTimeString , lastCollectedLogDateTimeString , createdDateTimeString } = client;
+          return (
+            <div className='client'>
+              <div onClick={e=>this.createNewClient({ 'clientId':client.clientId })}>
+                <p>{clientId}: +{String(client.clientUniqeId).split('@')[0]}</p>
+                <p>{activeClientState.activeClinetUniqeId===clientUniqeId?'🟢':'🔴'}</p>  
+              </div>
+              <div>
+                <p><span>Created at</span> : {createdDateTimeString}{` • ${moment(createdDateTimeString).fromNow()}`}</p>
+                <p><span>Last Collected Log at</span> : {lastCollectedLogDateTimeString}{Number.isInteger(client.lastCollectedLogDateTime)?` • ${moment(lastCollectedLogDateTimeString).fromNow()}`:''}</p>
+                <p><span>Last Active Time at</span> : {lastActiveDateTimeString}{` • ${moment(lastActiveDateTimeString).fromNow()}`}</p>
+                <hr/>
+                <div className='client-footer'>
+                  <div></div>
+                  { /*<LMSReact.InlineSquareButton 
+                    loading={false} disabled={false} size='m' location='right-top' icon='fas fa-rss' 
+                    title='Check Active Status?' style={{backgroundColor:`var(--google-color-yellow)`}}
+                  ></LMSReact.InlineSquareButton> */}
+                  { /*<LMSReact.InlineSquareButton 
+                    loading={removing===clientId} disabled={removing===clientId} size='m' location='right-top' icon='fas fa-times' 
+                    title='Remove this Client?' style={{backgroundColor:`var(--google-color-red)`}} onClick={e=>this.removingClient({ clientId })}
+                  ></LMSReact.InlineSquareButton>*/}
+                  <LMSReact.InlineSquareButton 
+                    loading={false} disabled={false} size='m' location='right-top' icon='fa-solid fa-comments' onClick={e=>this.collectMessagesLog({clientId})}
+                    title='Get Messages Log?' style={{backgroundColor:`var(--google-color-purple)`,marginLeft:`calc(var(--spacing)/2)`}}
+                  ></LMSReact.InlineSquareButton>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+}
+// <LMSReact.InlineTextInput type='text' inputId="urlInput" label='OR Selected URL' onChange={e=>{}} />
+  // <LMSReact.InlineButton className="upload-button" size='m' label='Selected File' onClick={e=>{}}>Add</LMSReact.InlineButton>
+function appendRenderButton(params) {
+  document.getElementById('container').innerHTML = `<button class="app-render-button" onclick="appRender()">Click Here to Render the Form</button>`
+}
+function appRender() {
+  try {
+    const rootElement = document.getElementById('container');
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<App/>);
+  } catch (error) {
+    appendRenderButton();
+    if( fetcher && fetcher.errorLogs ){
+      
+    } else {
+      alert(error.message)
+    }
+  }
+}
+window.onload = ()=>{
+    appRender();
+    setTimeout(()=>{
+      let elm = document.querySelector('.main-container');
+      if( !elm ){
+        appRender();
+      } else {
+        console.log('render-successfully')
+      }
+    },2000)
+}
+  </script>
+</body>
+</html>

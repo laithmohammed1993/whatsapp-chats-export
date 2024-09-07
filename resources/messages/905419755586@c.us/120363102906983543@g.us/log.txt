@@ -1,0 +1,107 @@
+{
+  "data": [
+    {
+      "fromMe": false,
+      "body": "847115- Nasratullah mujadidy didn't track his flight and was running late 30 mins, didn't informed us about lateness , thankfully we were able to cover it last minute",
+      "timestamp": 1724693986000,
+      "DateTimeString": "2024-08-26 20:39:46"
+    },
+    {
+      "fromMe": false,
+      "body": "844351 -- Hassan Sharif accepted this job, and at the same moment we sent the job to somebody else without seeing that, he called us and said he couldn't see the job, I told him sorry it was a system issue and sent it back to him and he *CONFIRMED* the booking, then when his flight landed we called him and he said oh you told me it was a system issue I am in central London",
+      "timestamp": 1724761765000,
+      "DateTimeString": "2024-08-27 15:29:25"
+    },
+    {
+      "fromMe": false,
+      "body": "847331 Ibrahim Sooyaan ---The driver called 2 hours before this transfer and said take my name back and hung up. After this call, we could never reach him. He does not answer his phone. He does not respond to the messages we wrote on WhatsApp. We cannot find a suitable driver for this transfer. There are 8 passengers and it is very difficult to cover this job.",
+      "timestamp": 1724861425000,
+      "DateTimeString": "2024-08-28 19:10:25"
+    },
+    {
+      "fromMe": false,
+      "body": "Spoken to him given him an offical warning! Tried to make some excuses I wasn’t having it gave slap on his wrist to watch him self 👋🏻. My eyes are on him 👀",
+      "timestamp": 1724906718000,
+      "DateTimeString": "2024-08-29 07:45:18"
+    },
+    {
+      "fromMe": false,
+      "body": "847531 Sheldon failed this job this morning he was late about 6 minutes and pax left before he arrived, he is almost always late for his morning pick ups he accepts job from heathrow london etc at 6-8 am and is late for most of them",
+      "timestamp": 1724923491000,
+      "DateTimeString": "2024-08-29 12:24:51"
+    },
+    {
+      "fromMe": false,
+      "body": "848820- Cash job, failed Das Virabhadra - \npickup time was 18:40, driver was running late (Das Virabhadra) despite all the warnings and remindings, the pax has left by another taxi at 18:52 / (we have looked for another driver for 1 and half an hour but there is no 8 seater around city airport for that short time, also we have offered to the pax £20 discount to be cut from the driver’s own account(driver admits), once the pax had accepted and happy, now not answering our phones)",
+      "timestamp": 1724954654000,
+      "DateTimeString": "2024-08-29 21:04:14"
+    },
+    {
+      "fromMe": false,
+      "body": "843700 - Marius Nistor when his flight landed we tried to call him but he never pickup up his phone, then we messaged him about his pickup time and he replied to us, at that time if he went to Gatwick he would be been there 10 minutes before the pickup time, then as time went on we saw that he was not getting closer but going away from Gatwick, we asked him about his ETA, he told us he picked up another customer and currently he is running late. When we asked him why he is running late he said that he has to provide for his family",
+      "timestamp": 1725013338000,
+      "DateTimeString": "2024-08-30 13:22:18"
+    },
+    {
+      "fromMe": false,
+      "body": "843700 Driver took another job while he suppose to go to our job we tried to cover the job but there was no available driver at Gatwick for this transfer Please charge full penalty of this booking to the driver.",
+      "timestamp": 1725017310000,
+      "DateTimeString": "2024-08-30 14:28:30"
+    },
+    {
+      "fromMe": false,
+      "body": "I've made his profile passive, please put notes on job for accountant. if he has any issues get him to contact me please",
+      "timestamp": 1725017935000,
+      "DateTimeString": "2024-08-30 14:38:55"
+    },
+    {
+      "fromMe": false,
+      "body": "I spoke with Halil Abi already he has 165 Pounds to be paid to his account.",
+      "timestamp": 1725018190000,
+      "DateTimeString": "2024-08-30 14:43:10"
+    },
+    {
+      "fromMe": false,
+      "body": "Our loss is 195 Pounds",
+      "timestamp": 1725018214000,
+      "DateTimeString": "2024-08-30 14:43:34"
+    },
+    {
+      "fromMe": false,
+      "body": "tamam it is what it is @447734955023 don't pay his money please any issues he can contact me",
+      "timestamp": 1725018648000,
+      "DateTimeString": "2024-08-30 14:50:48"
+    },
+    {
+      "fromMe": false,
+      "body": "849200 Das Virabhadra thought the pick up was from the drop off address and went there, so he called us and we took his job and sent him a new job from city but he doesn't even help with that, quite an irresponsible driver",
+      "timestamp": 1725083429000,
+      "DateTimeString": "2024-08-31 08:50:29"
+    },
+    {
+      "fromMe": false,
+      "body": "842093 Basem Al Raadi - this driver accepted this job from the publish list yesterday, now his flight will land in an hour and he calls us to say that he accepted a job from another company, so he will be running late to our job and asks us to cover it, he told us his dropoff location and time and according to google maps he should be making it on time, however he is pressuring us to cover it, saying that if there is an issue with customers our company is making the drivers wait",
+      "timestamp": 1725111375000,
+      "DateTimeString": "2024-08-31 16:36:15"
+    },
+    {
+      "fromMe": false,
+      "body": "846437 - Mouloud Mohammed Mercedes Vito SW6",
+      "timestamp": 1725182239000,
+      "DateTimeString": "2024-09-01 12:17:19"
+    },
+    {
+      "fromMe": false,
+      "body": "Hello \t\nHussein Abdirahman ( Mercedes V220 UB3 VIP ) is a FIRST to dispatch DRIVER, we have a connection jobs in the morning which is pick up time is so close. He was the only driver who can manage easily, even our offering jobs ( 849354 / 849334 ) better than his job ( 847239 ). \nWe kindly request you DOWNGRADE his rank, he doesn't help in our difficult situation. \nThank you",
+      "timestamp": 1725183635000,
+      "DateTimeString": "2024-09-01 12:40:35"
+    },
+    {
+      "fromMe": false,
+      "body": "\"Good morning,\n\nWe were taken yesterday from BA120ED near Warminster, to Heathrow T5 by one of your drivers in reg LG72 TTV. The booking was for my wife Annabel Scholey.\n\nI initially had to prompt the driver for her speed (95mph) on the motorway. Whilst this was bad enough, I then had to prompt her whilst she was doing 105mph and scrolling on her mobile phone. \n\nI’m sure you’ll agree, this is absolutely unacceptable and totally unsafe. \n\nThe reason for the delayed email is due to having the wrong email (info@apcars.com) but I bring this to your attention because this is clearly normalised behaviour for her and I worry about how she is compromising your duty of care to customers.\n\"\nWioleta - 842919",
+      "timestamp": 1725196765000,
+      "DateTimeString": "2024-09-01 16:19:25"
+    }
+  ],
+  "lastCollectedLogDateTime": 1725220056687
+}

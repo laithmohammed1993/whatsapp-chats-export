@@ -1,0 +1,5 @@
+/node_modules
+/databases/oglaa.db
+/.vscode
+/.wwebjs_auth
+/.wwebjs_cache
