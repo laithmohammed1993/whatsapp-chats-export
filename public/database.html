@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Collector</title>
+    <style>
+body { margin:0;padding:0; }
+div[kind='form'] > input {
+  position: absolute;
+  top: 0px;
+  right: 10px;
+  transform: scale(1.2);
+}
+div[kind='form'] > input:checked + div {
+  height: 17px;
+  overflow: hidden;
+}
+div[kind='form'] > div { display:flex;flex-direction:column;width:100% }
+code { padding:0 10px; }
+textarea { min-height: 200px; }
+button { margin: 10px 10px 0 auto;width:80px }
+th { background-color: silver;position: sticky; }
+td { border-bottom: 0.5px solid silver; }
+    </style>
+</head>
+<body onload="getLatest()">
+    <div kind='form'>
+      <input type="checkbox" />
+      <div>
+        <code>MySQL Query : <small id='period'></small></code>
+        <textarea></textarea>
+        <button onclick="getdata()">go</button>
+      </div>
+    </div>
+    <div id='table'>
+      hi
+    </div>
+<script>
+function getLatest(){
+  let latest = Object.keys(localStorage).filter(s=>s.includes('q-')).map(s=>s.split('q-')[1]).sort((a,b)=>a<b?1:(a>b?-1:0)).slice(0,10).map(s=>localStorage[`q-${s}`])
+  console.log(latest);
+  document.querySelector('textarea').value = latest[0];
+}
+function getdata(){
+  let t1 = performance.now();
+  let query = document.querySelector('textarea').value;
+  if(typeof query === 'string' && query.length > 0){
+    localStorage[`q-${new Date().toISOString()}`] = query;
+    fetch(`/database?query=${encodeURIComponent(query)}`).then(res=>res.text()).then(res=>{
+      let t2 = performance.now();
+      let period = (t2 - t1)/1000
+      document.getElementById('period').innerHTML = period;
+      document.getElementById('table').innerHTML = res;
+    })
+  }
+}
+// window.onbeforeunload = function(){
+//   localStorage['query'] = '';
+// }
+</script>
+</body>
+</html>

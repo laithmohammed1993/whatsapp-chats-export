@@ -87,8 +87,40 @@ function __main(params={}) {
   // })
 }
 
-__main()
+// __main()
 
+/*
+DROP TABLE messageslogs;
+CREATE TABLE IF NOT EXISTS messageslogs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    clientUniqeId  VARCHAR(255),
+    fromClient  INTEGER,
+    chatUniqeId VARCHAR(255),
+    senderUniqeId  VARCHAR(255),
+    message TEXT,
+    messageType VARCHAR(30),
+    messageDateTime INTEGER,
+    exportedDateTime INTEGER DEFAULT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS id_uniqe_message ON messageslogs (messageDateTime, clientUniqeId, chatUniqeId, fromClient);
+CREATE TABLE IF NOT EXISTS clients (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  lastActiveDateTime INTEGER,
+  lastCollectedLogDateTime INTEGER DEFAULT NULL,
+  clientUniqeId VARCHAR(50),
+  createdDateTime INTEGER
+);
+DROP TABLE members;
+CREATE TABLE members (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  clientUniqeId  VARCHAR(255),
+  memberUniqeId VARCHAR(255),
+  name VARCHAR(255),
+  pushname VARCHAR(255),
+  type INTEGER,
+  createdDateTime INTEGER
+);
+*/ 
 module.exports = {
   query,
   queryAsync,

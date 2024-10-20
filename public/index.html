@@ -75,6 +75,9 @@ body {
 .client > div:last-child > p > span { color: silver;width: 160px;font-size: 12px;display: inline-block; }
 .client-footer { display: flex;flex-direction: row;justify-content: space-between;align-content: center; }
 .client-footer > div:first-child { flex: 1; }
+
+.client-footer-exported-date-list { width: 170px;font-size: 14px !important; }
+.client-footer-exported-date-list > option { font-size: 14px !important;  }
 </style>
 </head>
 <body>
@@ -87,20 +90,11 @@ const __env = {
   'userId':'__user_id__',
   'xAuthToken':'__x_auth_token__'
 }
-const initialState = {
-  clients : [],
-  activeClientState:{},
-  refreshing:false,
-  removing:null,
-  collectingQrCode : false,
-  loading:false,
-  error:null,
-  qrCode : null,
-  totalUpdates:0
-}
+
 const fetcher = {
-  'createNewClient':(params={ 'clientId':Number() },callback=()=>{})=>{
-    fetch(`/api/clients/create?clientId=${params.clientId}`).then(res=>res.json()).then(res=>callback(res)).catch(error=>callback({ 'status':403,error }))
+  'createNewClient':(params={ 'clientId':Number(),'phoneNumber':String() },callback=()=>{})=>{
+    console.log(params)
+    fetch(`/api/clients/create?clientId=${params.clientId}&phoneNumber=${params.phoneNumber}`).then(res=>res.json()).then(res=>callback(res)).catch(error=>callback({ 'status':403,error }))
   },
   'removeClient':(params={ 'clientId':Number() },callback=()=>{})=>{
     fetch(`/api/clients/remove?clientId=${params.clientId}`).then(res=>res.json()).then(res=>callback(res)).catch(error=>callback({ 'status':403,error }))
@@ -110,7 +104,24 @@ const fetcher = {
   },
   'getClientsState':(params={},callback=()=>{})=>{
     fetch('/api/clients/state').then(res=>res.json()).then(res=>callback(res)).catch(error=>callback({ 'status':403,error }))
+  },
+  'clientLogout':(params={},callback=()=>{})=>{
+    fetch('/api/client/logout').then(res=>res.json()).then(res=>callback(res)).catch(error=>callback({ 'status':403,error }))
   }
+}
+const initialState = {
+  clients : [],
+  activeClientState:{},
+  refreshing:false,
+  removing:null,
+  collectingQrCode : false,
+  loading:false,
+  error:null,
+  qrCode : null,
+  totalUpdates:0,
+  clientsState:{},
+  phoneNumber:null,
+  clientLogouting:null
 }
 class App extends React.PureComponent {
   constructor(props) {
@@ -122,7 +133,12 @@ class App extends React.PureComponent {
   componentDidMount(){
     this.getClientsState()
   }
-  getClientsState(params={}){
+  setClientState(clientId=Number(),state={},callback=()=>{}){
+    let { clientsState , totalUpdates } = this.state;
+    clientsState[clientId] = { ...clientsState[clientId] , ...state };
+    this.setState({ clientsState , 'totalUpdates':totalUpdates+1 },callback)
+  }
+  getClientsState(params={},callback=()=>{}){
     if( this.state.refreshing === false ){
       this.setState({ 'refreshing':true },()=>{
         setTimeout(()=>{
@@ -131,52 +147,123 @@ class App extends React.PureComponent {
             if( log.status === 200 ){
               _state.clients = log.data.clients;
               _state.activeClientState = log.data.activeClientState || {}
-              if( typeof _state.activeClientState.activeClinetUniqeId === 'string' ){
-                _state.qrCode = null
-              }
+              _state.qrCode = log.data.activeClientState.qrCode
             }
-            this.setState(_state)
+            this.setState(_state,callback)
           })
         },1000)
       })
     }
   }
   createNewClient(params={}){
+    if( this.state.phoneNumber === null ){
+      this.setState({ phoneNumber:'' })
+    } else {
+      let _confirm = window.confirm(`Do you want to add New Client`)
+      if( _confirm ){
+        if( this.state.collectingQrCode === false ){
+          this.setState({ collectingQrCode:true,'qrCode':null },()=>{
+            fetcher.createNewClient({'clientId':params.clientId,'phoneNumber':this.state.phoneNumber },log=>{
+              let _state = { 'totalUpdates':this.state.totalUpdates+1 }
+              // _state.collectingQrCode = false
+              _state.phoneNumber = null;
+              this.setState(_state,()=>{
+                this.updatinggStateLoop({ collectingQrCode:false },()=>typeof this.state.qrCode==='string')
+              })
+            })
+          })
+        }
+      }
+    }
+  }
+  updatinggStateLoop(state={},rule=()=>{ return true }){
+    let interval = setInterval(()=>{
+      this.getClientsState()
+      if( rule() ){
+        clearInterval(interval);
+        this.setState(state)
+      }
+    },2000)
+  }
+  createClientConnection(params={}){
     if( this.state.collectingQrCode === false ){
       this.setState({ collectingQrCode:true,'qrCode':null },()=>{
-        fetcher.createNewClient({'clientId':params.clientId},log=>{
-          let _state = { 'totalUpdates':this.state.totalUpdates+1 }
-          if( log.status === 200 ){
-            console.log(log.data)
-            _state.qrCode = log.data.qrString
-          }
-          _state.collectingQrCode = false
-          this.setState(_state,()=>{
-            this.getClientsState()
-          })
+        fetcher.createNewClient({'clientId':params.clientId },log=>{
+          // let _state = { 'totalUpdates':this.state.totalUpdates+1 }
+          // if( log.status === 200 ){
+          //   _state.qrCode = log.data.qrString
+          // }
+          // // _state.collectingQrCode = false
+          // this.setState(_state,()=>{
+            
+          // })
+          this.updatinggStateLoop({ collectingQrCode:false },()=>typeof this.state.activeClientState.activeClinetUniqeId==='string')
         })
       })
     }
   }
   collectMessagesLog(params={}){
-    let { clientId } = params;
-    fetcher.collectMessagesLog({ clientId },console.log)
+    let { clientId , clientUniqeId } = params;
+    let clientState = this.state.clientsState[clientId]||{};
+    if( Number.isInteger(parseInt(clientState.selectedExportDate)) ){
+      window.open(`/files/exported/${clientUniqeId}/${clientState.selectedExportDate}.xlsx`,'_blank')
+    } else {
+      if( clientState.selectedExportDate === 'null' ){
+        this.setClientState(clientId,{ collectingMessages:true },()=>{
+          fetcher.collectMessagesLog({ clientId },log=>{
+            console.log({log})
+            if( log.status === 200 ){
+              this.getClientsState({},()=>{
+                this.setClientState(clientId,{ collectingMessages:false,'selectedExportDate':log.data.exportDateTime },()=>{
+                  window.open(`/files/exported/${clientUniqeId}/${log.data.exportDateTime}.xlsx`,'_blank')
+                })
+              })
+            } else {
+              this.setClientState(clientId,{ collectingMessages:false})
+              alert(log.error.message)
+            }
+          })
+        })
+      }
+    }
+    
+    
   }
   removingClient({clientId}){
     if( !Number.isInteger(this.state.removing) ){
-      this.setState({ removing:clientId },()=>{
-        fetcher.removeClient({'clientId':clientId},log=>{
-          let _state = {}
-          _state.removing = null
-          this.setState(_state,()=>{
-            this.getClientsState()
+      let _confirm = window.confirm(`Are you sure about removing this client ${(this.state.clients.find(c=>c.clientId===clientId)||{}).clientUniqeId.split('@')[0]} ?`)
+      if( _confirm ){
+        this.setState({ removing:clientId },()=>{
+          fetcher.removeClient({'clientId':clientId},log=>{
+            let _state = {}
+            _state.removing = null
+            this.setState(_state,()=>{
+              this.getClientsState()
+            })
           })
         })
-      })
+      }
+    }
+  }
+  clientLogout({clientId}){
+    if( !Number.isInteger(this.state.clientLogouting) ){
+      let _confirm = window.confirm(`Are you sure about close the connection of client ${(this.state.clients.find(c=>c.clientId===clientId)||{}).clientUniqeId.split('@')[0]} ?`)
+      if( _confirm ){
+        this.setState({ 'clientLogouting':clientId },()=>{
+          fetcher.clientLogout({'clientId':clientId},log=>{
+            let _state = {}
+            _state.clientLogouting = null
+            this.setState(_state,()=>{
+              this.getClientsState()
+            })
+          })
+        })
+      }
     }
   }
   render(){
-    let { loading , qrCode , collectingQrCode , clients , activeClientState , refreshing , removing } = this.state;
+    let { loading , qrCode , collectingQrCode , clients , activeClientState , refreshing , removing , clientsState , phoneNumber , clientLogouting  } = this.state;
+    //
     return (
       <div class="main-container">
         <div className='clients-header'>
@@ -186,6 +273,10 @@ class App extends React.PureComponent {
               loading={refreshing} disabled={refreshing} size='m' location='right-top' icon={`fa-solid fa-arrows-rotate ${refreshing?'fa-spin':''}`}
               style={{backgroundColor:`var(--google-color-blue)`,marginRight:'calc(var(--spacing)/2)'}} title='Refresh ?' onClick={e=>this.getClientsState()}
             ></LMSReact.InlineSquareButton>
+            <input 
+              style={{ display:typeof phoneNumber === 'string'?'flex':'none',marginRight:`calc( var(--spacing)/2 )` }} placeholder='Phone Number' 
+              value={phoneNumber||''} onChange={e=>this.setState({ 'phoneNumber':e.target.value })}
+            />
             <LMSReact.InlineSquareButton 
               loading={collectingQrCode} disabled={collectingQrCode} size='m' location='right-top' icon='fas fa-plus' 
               style={{backgroundColor:`var(--google-color-green)`}} title='Add Client' onClick={e=>this.createNewClient()}
@@ -197,32 +288,66 @@ class App extends React.PureComponent {
         :<React.Fragment></React.Fragment>
         }
         {clients.map((client,i)=>{
-          let { clientId , clientUniqeId , lastActiveDateTimeString , lastCollectedLogDateTimeString , createdDateTimeString } = client;
+          let { clientId , clientUniqeId , lastActiveDateTimeString , lastCollectedLogDateTimeString , createdDateTimeString , exportedDates } = client;
+          let exportState = activeClientState.activeClinetUniqeId===clientUniqeId?activeClientState.exportState:{}
+          exportState     = exportState.status !== null?exportState:{}
+          let hasActiveConnection = activeClientState.activeClinetUniqeId===clientUniqeId
+          let clientState = clientsState[clientId] || {};
+          if( !hasActiveConnection && activeClientState.activeClinetUniqeId ){
+            console.log({hasActiveConnection,clientId})
+            return <React.Fragment></React.Fragment>
+          }
+          //
           return (
             <div className='client'>
-              <div onClick={e=>this.createNewClient({ 'clientId':client.clientId })}>
+              <div>
                 <p>{clientId}: +{String(client.clientUniqeId).split('@')[0]}</p>
-                <p>{activeClientState.activeClinetUniqeId===clientUniqeId?'🟢':'🔴'}</p>  
+                <p>{hasActiveConnection?'🟢':'🔴'}</p>  
               </div>
               <div>
                 <p><span>Created at</span> : {createdDateTimeString}{` • ${moment(createdDateTimeString).fromNow()}`}</p>
                 <p><span>Last Collected Log at</span> : {lastCollectedLogDateTimeString}{Number.isInteger(client.lastCollectedLogDateTime)?` • ${moment(lastCollectedLogDateTimeString).fromNow()}`:''}</p>
                 <p><span>Last Active Time at</span> : {lastActiveDateTimeString}{` • ${moment(lastActiveDateTimeString).fromNow()}`}</p>
+                <p style={{display:Object.keys(exportState).length>0?'inline-block':'none'}}><span>Prograss {exportState.status} </span> : collected {exportState.collected} out of {exportState.total}</p>
                 <hr/>
                 <div className='client-footer'>
-                  <div></div>
-                  { /*<LMSReact.InlineSquareButton 
-                    loading={false} disabled={false} size='m' location='right-top' icon='fas fa-rss' 
-                    title='Check Active Status?' style={{backgroundColor:`var(--google-color-yellow)`}}
-                  ></LMSReact.InlineSquareButton> */}
-                  { /*<LMSReact.InlineSquareButton 
-                    loading={removing===clientId} disabled={removing===clientId} size='m' location='right-top' icon='fas fa-times' 
-                    title='Remove this Client?' style={{backgroundColor:`var(--google-color-red)`}} onClick={e=>this.removingClient({ clientId })}
-                  ></LMSReact.InlineSquareButton>*/}
-                  <LMSReact.InlineSquareButton 
-                    loading={false} disabled={false} size='m' location='right-top' icon='fa-solid fa-comments' onClick={e=>this.collectMessagesLog({clientId})}
-                    title='Get Messages Log?' style={{backgroundColor:`var(--google-color-purple)`,marginLeft:`calc(var(--spacing)/2)`}}
-                  ></LMSReact.InlineSquareButton>
+                  <select className='client-footer-exported-date-list' value={clientState.selectedExportDate || ''} onChange={e=>this.setClientState(clientId,{ 'selectedExportDate':e.target.value })}>
+                    <option value='' disabled> --- select ---</option>
+                    {exportedDates.map((d,x)=><option key={x} value={d.exportedDateTime}>{d.exportedDateTimeString}</option> )}
+                    <option value='null'>Now</option>
+                  </select>
+                  <div style={{flex:1}}></div>
+                  {!hasActiveConnection
+                  ? <React.Fragment>
+                      <LMSReact.InlineSquareButton 
+                        loading={false} disabled={hasActiveConnection||removing!==null||collectingQrCode} size='m' location='right-top' icon='fas fa-rss'  onClick={e=>this.createClientConnection({ 'clientId':clientId })}
+                        title={hasActiveConnection?'Active Connection':'Create a connection?'} style={{backgroundColor:`var(--google-color-green)`,marginLeft:`calc(var(--spacing)/2)`}}
+                      ></LMSReact.InlineSquareButton>
+                      <LMSReact.InlineSquareButton 
+                        loading={removing===clientId} disabled={removing!==null} size='m' location='right-top' icon='fas fa-times' 
+                        title='Remove this Client?' style={{backgroundColor:`var(--google-color-red)`,marginLeft:`calc(var(--spacing)/2)`}} onClick={e=>this.removingClient({ clientId })}
+                      ></LMSReact.InlineSquareButton>
+                    </React.Fragment>
+                  : <React.Fragment>
+                      <LMSReact.InlineSquareButton 
+                        loading={clientLogouting===clientId} disabled={clientLogouting!==null} size='m' location='right-top' icon='fa-solid fa-right-from-bracket' 
+                        title='Close Client connection?' style={{backgroundColor:`var(--google-color-yellow)`,marginLeft:`calc(var(--spacing)/2)`}} onClick={e=>this.clientLogout({ clientId })}
+                      ></LMSReact.InlineSquareButton>
+                      <LMSReact.InlineSquareButton 
+                        loading={clientState.collectingMessages===true} 
+                        disabled={
+                          hasActiveConnection&&
+                          clientState.collectingMessages!==true&&
+                          (clientState.selectedExportDate==='null'||Number.isInteger(parseInt(clientState.selectedExportDate)))
+                          ?false
+                          :true
+                        } size='m' location='right-top' icon='fa-solid fa-comments' onClick={e=>this.collectMessagesLog({clientId,clientUniqeId})}
+                        title='Get Messages Log?' style={{backgroundColor:`var(--google-color-purple)`,marginLeft:`calc(var(--spacing)/2)`}}
+                      ></LMSReact.InlineSquareButton>
+                    </React.Fragment>
+                  }
+                  
+                  
                 </div>
               </div>
             </div>
